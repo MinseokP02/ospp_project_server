@@ -117,4 +117,6 @@ public class User {
     public void levelUp() {
         this.level += 1;
     }
+
+    public void updateLevel(int newLevel) { this.level = newLevel; }
 }

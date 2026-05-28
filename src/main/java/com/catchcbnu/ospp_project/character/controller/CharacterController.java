@@ -10,7 +10,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/characters")
 public class CharacterController {
-
     @GetMapping("/test")
     public String test() {
         return "character controller connected";
@@ -22,7 +21,7 @@ public class CharacterController {
         this.characterService = characterService;
     }
 
-    @PostMapping("/catch")
+    @PostMapping("/spawns")
     public CharacterResponse catchCharacter(@RequestBody CharacterCatchRequest request) {
         return characterService.catchCharacter(request);
     }
