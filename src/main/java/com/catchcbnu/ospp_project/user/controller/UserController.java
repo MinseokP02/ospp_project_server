@@ -1,5 +1,7 @@
 package com.catchcbnu.ospp_project.user.controller;
 
+import com.catchcbnu.ospp_project.activity.dto.UserActivityPageResponse;
+import com.catchcbnu.ospp_project.activity.service.UserActivityService;
 import com.catchcbnu.ospp_project.common.response.ApiResponse;
 import com.catchcbnu.ospp_project.user.dto.UserLevelResponse;
 import com.catchcbnu.ospp_project.user.dto.UserResponse;
@@ -14,9 +16,11 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
+    private final UserActivityService userActivityService;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, UserActivityService userActivityService) {
         this.userService = userService;
+        this.userActivityService = userActivityService;
     }
 
     @GetMapping("/me")
@@ -38,6 +42,20 @@ public class UserController {
 
         return ResponseEntity.ok(
                 ApiResponse.success(HttpStatus.OK, "레벨 정보 조회 성공", response)
+        );
+    }
+
+    @GetMapping("/me/activities")
+    public ResponseEntity<ApiResponse<UserActivityPageResponse>> getMyActivities(
+            @AuthenticationPrincipal Long userId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        UserActivityPageResponse response =
+                userActivityService.getMyActivities(userId, page, size);
+
+        return ResponseEntity.ok(
+                ApiResponse.success(HttpStatus.OK, "활동 기록 조회 성공", response)
         );
     }
 

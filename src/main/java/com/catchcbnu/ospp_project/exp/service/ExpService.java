@@ -1,5 +1,7 @@
 package com.catchcbnu.ospp_project.exp.service;
 
+import com.catchcbnu.ospp_project.activity.entity.ActivityType;
+import com.catchcbnu.ospp_project.activity.service.UserActivityService;
 import com.catchcbnu.ospp_project.exp.dto.ExpEventRequest;
 import com.catchcbnu.ospp_project.exp.dto.ExpEventResponse;
 import com.catchcbnu.ospp_project.user.entity.User;
@@ -12,10 +14,16 @@ public class ExpService {
 
     private final UserRepository userRepository;
     private final LevelEngine levelEngine;
+    private final UserActivityService userActivityService;
 
-    public ExpService(UserRepository userRepository, LevelEngine levelEngine) {
+    public ExpService(
+            UserRepository userRepository,
+            LevelEngine levelEngine,
+            UserActivityService userActivityService
+    ) {
         this.userRepository = userRepository;
         this.levelEngine = levelEngine;
+        this.userActivityService = userActivityService;
     }
 
     @Transactional
@@ -27,7 +35,25 @@ public class ExpService {
             throw new IllegalArgumentException("경험치는 1 이상이어야 합니다.");
         }
 
-        levelEngine.applyExp(user, request.amount());
+        boolean levelUp = levelEngine.applyExp(user, request.amount());
+
+        userActivityService.createActivity(
+                user,
+                ActivityType.EXP,
+                "경험치 획득",
+                request.eventType() + " 활동으로 경험치를 획득했습니다.",
+                request.amount()
+        );
+
+        if (levelUp) {
+            userActivityService.createActivity(
+                    user,
+                    ActivityType.LEVEL_UP,
+                    "레벨업",
+                    user.getLevel() + "레벨이 되었습니다.",
+                    0
+            );
+        }
 
         return new ExpEventResponse(
                 user.getId(),
