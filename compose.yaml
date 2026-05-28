@@ -3,7 +3,7 @@ services:
     image: mysql:8.4
     container_name: ospp-mysql
     environment:
-      MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ospp_project
     ports:
       - "3306:3306"
@@ -16,7 +16,7 @@ services:
     ports:
       - "8081:8080"
     environment:
-      SPRING_DOCKER_COMPOSE_ENABLED: false
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/ospp_project?serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true&useSSL=false
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: 1234
+      SPRING_DOCKER_COMPOSE_ENABLED: ${SPRING_DOCKER_COMPOSE_ENABLED}
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}

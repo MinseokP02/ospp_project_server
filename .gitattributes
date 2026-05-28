@@ -1,3 +1,13 @@
 /gradlew text eol=lf
 *.bat text eol=crlf
 *.jar binary
+
+* text=auto
+
+*.sh text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.env text eol=lf
+*.gitignore text eol=lf
+
+*.cmd text eol=crlf
