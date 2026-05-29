@@ -7,6 +7,9 @@ services:
       MYSQL_DATABASE: ospp_project
     ports:
       - "3306:3306"
+    volumes:
+      - ./src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+
 
   server:
     build: .

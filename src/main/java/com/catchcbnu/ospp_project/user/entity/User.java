@@ -117,4 +117,8 @@ public class User {
     public void levelUp() {
         this.level += 1;
     }
+
+    public void increaseSubmissionCount() {
+        this.totalSubmissionCount += 1;
+    }
 }
