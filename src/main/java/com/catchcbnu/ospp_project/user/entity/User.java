@@ -118,5 +118,11 @@ public class User {
         this.level += 1;
     }
 
-    public void updateLevel(int newLevel) { this.level = newLevel; }
+    public void increaseSubmissionCount() {
+        this.totalSubmissionCount += 1;
+    }
+
+    public void updateLevel(int newLevel) {
+        this.level = newLevel;
+    }
 }
