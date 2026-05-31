@@ -6,7 +6,15 @@ public record UserResponse(
         String nickname,
         String college,
         String department,
+        int totalSubmissionCount,
+        int exp,
         int level,
-        int exp
+        RankingSummary ranking
 ) {
+    public record RankingSummary(
+            int overallRank,
+            int collegeRank,
+            int departmentRank
+    ){
+    }
 }

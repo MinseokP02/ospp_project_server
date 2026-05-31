@@ -19,4 +19,13 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findByCollegeOrderByLevelDescExpDesc(String college);
 
     List<User> findByDepartmentOrderByLevelDescExpDesc(String department);
+
+    List<User> findAllByOrderByTotalSubmissionCountDescExpDescUpdatedAtDesc();
+
+    List<User> findByCollegeOrderByTotalSubmissionCountDescExpDescUpdatedAtDesc(String college);
+
+    List<User> findByCollegeAndDepartmentOrderByTotalSubmissionCountDescExpDescUpdatedAtDesc(
+            String college,
+            String department
+    );
 }

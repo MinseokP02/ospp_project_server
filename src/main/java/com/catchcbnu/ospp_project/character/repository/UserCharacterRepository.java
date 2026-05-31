@@ -7,5 +7,7 @@ import java.util.List;
 
 public interface UserCharacterRepository extends JpaRepository<UserCharacter, Long> {
 
-    List<UserCharacter> findByUserId(Long userId);
+    List<UserCharacter> findByUser_IdOrderByFoundAtDesc(Long userId);
+
+    boolean existsByUser_IdAndSpawn_Id(Long userId, Long spawnId);
 }
