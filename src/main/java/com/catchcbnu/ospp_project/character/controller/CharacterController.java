@@ -7,6 +7,7 @@ import com.catchcbnu.ospp_project.character.dto.CharacterSpawnListResponse;
 import com.catchcbnu.ospp_project.character.dto.MyCharacterListResponse;
 import com.catchcbnu.ospp_project.character.service.CharacterService;
 import com.catchcbnu.ospp_project.common.response.ApiResponse;
+import com.catchcbnu.ospp_project.character.dto.CharacterDexResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -52,6 +53,17 @@ public class CharacterController {
         );
     }
 
+    @GetMapping("/api/users/me/characters/dex")
+    public ResponseEntity<ApiResponse<CharacterDexResponse>> getMyCharacterDex(
+            @AuthenticationPrincipal Long userId
+    ) {
+        CharacterDexResponse response = characterService.getMyCharacterDex(userId);
+
+        return ResponseEntity.ok(
+                ApiResponse.success(HttpStatus.OK, "내 캐릭터 도감 조회 성공", response)
+        );
+    }
+
     @PostMapping("/characters/spawns/test")
     public ResponseEntity<ApiResponse<CharacterSpawnListResponse.SpawnItem>> createRandomSpawnForTest(
             @Valid @RequestBody CharacterSpawnCreateRequest request
@@ -62,6 +74,8 @@ public class CharacterController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success(HttpStatus.CREATED, "테스트용 캐릭터 출몰 생성 성공", response));
     }
+
+
 
     // 테스트용. 나중에 Submission API에서 캐릭터 발견 처리를 연결하면 제거 가능.
 //    @PostMapping("/api/users/me/characters")

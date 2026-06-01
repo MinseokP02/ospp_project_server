@@ -26,8 +26,8 @@ public class CharacterSpawnScheduler {
         this.characterService = characterService;
     }
 
-    @Scheduled(cron = "0 0 * * * *")
-    //@Scheduled(fixedRate = 30000)
+    //@Scheduled(cron = "0 0 * * * *")
+    @Scheduled(fixedRate = 30000)
     public void spawnRandomCharacterEveryHour() {
         List<Sensor> activeSensors = sensorRepository.findByActiveTrueOrderByIdAsc();
 

@@ -16,13 +16,17 @@ import com.catchcbnu.ospp_project.character.repository.UserCharacterRepository;
 import com.catchcbnu.ospp_project.exp.service.LevelEngine;
 import com.catchcbnu.ospp_project.user.entity.User;
 import com.catchcbnu.ospp_project.user.repository.UserRepository;
+import com.catchcbnu.ospp_project.character.dto.CharacterDexResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
+import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.List;
 import java.util.Random;
+import java.util.Optional;
 
 @Service
 public class CharacterService {
@@ -126,7 +130,7 @@ public class CharacterService {
                 ? 60
                 : Math.max(request.durationMinutes(), 1);
 
-        CharacterInfo selectedCharacter = selectRandomCharacterBySpawnRate();
+        CharacterInfo selectedCharacter = selectRandomCharacterForced();
 
         LocalDateTime now = LocalDateTime.now();
 
@@ -173,10 +177,14 @@ public class CharacterService {
             return false;
         }
 
-        CharacterInfo selectedCharacter = selectRandomCharacterBySpawnRate();
+        Optional<CharacterInfo> selectedCharacter = selectRandomCharacterBySpawnRate();
+
+        if (selectedCharacter.isEmpty()) {
+            return false;
+        }
 
         CharacterSpawn spawn = new CharacterSpawn(
-                selectedCharacter,
+                selectedCharacter.get(),
                 sensorId,
                 sensorName,
                 now,
@@ -260,7 +268,7 @@ public class CharacterService {
         );
     }
 
-    private CharacterInfo selectRandomCharacterBySpawnRate() {
+    private Optional<CharacterInfo> selectRandomCharacterBySpawnRate() {
         List<CharacterInfo> characters = characterRepository.findAllByOrderByIdAsc();
 
         if (characters.isEmpty()) {
@@ -274,12 +282,20 @@ public class CharacterService {
                 .sum();
 
         if (totalWeight <= 0) {
-            return characters.stream()
-                    .min(Comparator.comparingLong(CharacterInfo::getId))
-                    .orElseThrow();
+            return Optional.empty();
         }
 
-        double randomValue = random.nextDouble() * totalWeight;
+        /*
+         * baseSpawnRate 총합이 80이면,
+         * 0~80 구간에서는 캐릭터 출현,
+         * 80~100 구간에서는 미출현.
+         */
+        double roll = random.nextDouble() * 100.0;
+
+        if (roll > totalWeight) {
+            return Optional.empty();
+        }
+
         double cumulative = 0.0;
 
         for (CharacterInfo character : characters) {
@@ -289,12 +305,12 @@ public class CharacterService {
 
             cumulative += weight;
 
-            if (randomValue <= cumulative) {
-                return character;
+            if (roll <= cumulative) {
+                return Optional.of(character);
             }
         }
 
-        return characters.get(characters.size() - 1);
+        return Optional.empty();
     }
 
     private int calculateCharacterBonusExp(String rarity) {
@@ -308,5 +324,94 @@ public class CharacterService {
             case "COMMON" -> 20;
             default -> 20;
         };
+    }
+
+    private CharacterInfo selectRandomCharacterForced() {
+        List<CharacterInfo> characters = characterRepository.findAllByOrderByIdAsc();
+
+        if (characters.isEmpty()) {
+            throw new IllegalStateException("등록된 캐릭터가 없습니다.");
+        }
+
+        double totalWeight = characters.stream()
+                .map(CharacterInfo::getBaseSpawnRate)
+                .filter(rate -> rate != null && rate > 0)
+                .mapToDouble(Double::doubleValue)
+                .sum();
+
+        if (totalWeight <= 0) {
+            return characters.get(0);
+        }
+
+        double roll = random.nextDouble() * totalWeight;
+        double cumulative = 0.0;
+
+        for (CharacterInfo character : characters) {
+            double weight = character.getBaseSpawnRate() == null
+                    ? 0.0
+                    : Math.max(character.getBaseSpawnRate(), 0.0);
+
+            cumulative += weight;
+
+            if (roll <= cumulative) {
+                return character;
+            }
+        }
+
+        return characters.get(characters.size() - 1);
+    }
+
+    @Transactional(readOnly = true)
+    public CharacterDexResponse getMyCharacterDex(Long userId) {
+        if (!userRepository.existsById(userId)) {
+            throw new IllegalArgumentException("사용자를 찾을 수 없습니다.");
+        }
+
+        List<CharacterInfo> allCharacters = characterRepository.findAllByOrderByIdAsc();
+
+        List<UserCharacter> myCharacters =
+                userCharacterRepository.findByUser_IdOrderByFoundAtDesc(userId);
+
+        Map<Long, List<UserCharacter>> collectedMap =
+                myCharacters.stream()
+                        .collect(Collectors.groupingBy(
+                                userCharacter -> userCharacter.getCharacter().getId()
+                        ));
+
+        List<CharacterDexResponse.CharacterDexItem> dexItems =
+                allCharacters.stream()
+                        .map(character -> {
+                            List<UserCharacter> collectedList =
+                                    collectedMap.getOrDefault(character.getId(), List.of());
+
+                            boolean collected = !collectedList.isEmpty();
+
+                            LocalDateTime firstFoundAt = collectedList.stream()
+                                    .map(UserCharacter::getFoundAt)
+                                    .min(LocalDateTime::compareTo)
+                                    .orElse(null);
+
+                            return new CharacterDexResponse.CharacterDexItem(
+                                    character.getId(),
+                                    character.getName(),
+                                    character.getRarity(),
+                                    character.getDescription(),
+                                    character.getBaseSpawnRate(),
+                                    collected,
+                                    collectedList.size(),
+                                    firstFoundAt
+                            );
+                        })
+                        .toList();
+
+        int collectedCount = (int) dexItems.stream()
+                .filter(CharacterDexResponse.CharacterDexItem::collected)
+                .count();
+
+        return new CharacterDexResponse(
+                allCharacters.size(),
+                collectedCount,
+                dexItems
+        );
     }
 }

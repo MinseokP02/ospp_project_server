@@ -82,7 +82,9 @@ public class RankingService {
                 })
                 .sorted(
                         Comparator.comparingLong(CollegeRankingTemp::totalSubmissionCount).reversed()
-                                .thenComparingLong(CollegeRankingTemp::userCount).reversed()
+                                .thenComparing(
+                                        Comparator.comparingLong(CollegeRankingTemp::userCount).reversed()
+                                )
                                 .thenComparing(CollegeRankingTemp::college)
                 )
                 .map(temp -> new CollegeRankingResponse(
@@ -144,10 +146,12 @@ public class RankingService {
                     );
                 })
                 .sorted(
-                        Comparator.comparingLong(DepartmentRankingTemp::totalSubmissionCount).reversed()
-                                .thenComparingLong(DepartmentRankingTemp::userCount).reversed()
-                                .thenComparing(DepartmentRankingTemp::college)
-                                .thenComparing(DepartmentRankingTemp::department)
+                Comparator.comparingLong(DepartmentRankingTemp::totalSubmissionCount).reversed()
+                        .thenComparing(
+                                Comparator.comparingLong(DepartmentRankingTemp::userCount).reversed()
+                        )
+                        .thenComparing(DepartmentRankingTemp::college)
+                        .thenComparing(DepartmentRankingTemp::department)
                 )
                 .map(temp -> new DepartmentRankingResponse(
                         0,
