@@ -10,10 +10,12 @@ import java.time.LocalDateTime;
 @Entity
 @Table(
         name = "submissions",
-        uniqueConstraints = @UniqueConstraint(
-                name = "uq_user_sensor_time_slot",
-                columnNames = {"user_id", "sensor_id", "time_slot"}
-        )
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_submission_user_sensor_time_slot",
+                        columnNames = {"user_id", "sensor_id", "time_slot"}
+                )
+        }
 )
 public class Submission {
 
@@ -21,27 +23,27 @@ public class Submission {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id")
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sensor_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "sensor_id")
     private Sensor sensor;
 
-    @Column(name = "temperature", precision = 5, scale = 2)
+    @Column(name = "temperature", nullable = false, precision = 6, scale = 2)
     private BigDecimal temperature;
 
-    @Column(name = "humidity", precision = 5, scale = 2)
+    @Column(name = "humidity", nullable = false, precision = 6, scale = 2)
     private BigDecimal humidity;
 
-    @Column(name = "eco2")
+    @Column(name = "eco2", nullable = false)
     private Integer eco2;
 
-    @Column(name = "air_quality")
+    @Column(name = "air_quality", nullable = false)
     private Integer airQuality;
 
-    @Column(name = "rssi")
+    @Column(name = "rssi", nullable = false)
     private Integer rssi;
 
     @Column(name = "latitude", precision = 10, scale = 7)
@@ -50,12 +52,15 @@ public class Submission {
     @Column(name = "longitude", precision = 10, scale = 7)
     private BigDecimal longitude;
 
+    // 센서가 측정한 시간
     @Column(name = "measured_at", nullable = false)
     private LocalDateTime measuredAt;
 
+    // 서버가 전송을 받은 시간
     @Column(name = "submitted_at", nullable = false)
     private LocalDateTime submittedAt;
 
+    // 중복 방지용 시간대. 서버 시간 기준 정각 단위.
     @Column(name = "time_slot", nullable = false)
     private LocalDateTime timeSlot;
 
@@ -76,8 +81,9 @@ public class Submission {
             BigDecimal latitude,
             BigDecimal longitude,
             LocalDateTime measuredAt,
+            LocalDateTime submittedAt,
             LocalDateTime timeSlot,
-            int rewardExp
+            Integer rewardExp
     ) {
         this.user = user;
         this.sensor = sensor;
@@ -89,7 +95,7 @@ public class Submission {
         this.latitude = latitude;
         this.longitude = longitude;
         this.measuredAt = measuredAt;
-        this.submittedAt = LocalDateTime.now();
+        this.submittedAt = submittedAt;
         this.timeSlot = timeSlot;
         this.rewardExp = rewardExp;
     }

@@ -2,6 +2,7 @@ package com.catchcbnu.ospp_project.submission.controller;
 
 import com.catchcbnu.ospp_project.common.response.ApiResponse;
 import com.catchcbnu.ospp_project.submission.dto.SubmissionAvailabilityResponse;
+import com.catchcbnu.ospp_project.submission.dto.SubmissionPageResponse;
 import com.catchcbnu.ospp_project.submission.dto.SubmissionRequest;
 import com.catchcbnu.ospp_project.submission.dto.SubmissionResponse;
 import com.catchcbnu.ospp_project.submission.service.SubmissionService;
@@ -35,7 +36,29 @@ public class SubmissionController {
             @AuthenticationPrincipal Long userId,
             @Valid @RequestBody SubmissionRequest request
     ) {
+        System.out.println("===submission controller 진입===");
+        System.out.println("UserId = " + userId);
+        System.out.println("request=" + request);
         SubmissionResponse response = submissionService.submit(userId, request);
+
+        System.out.println("=== Submission Service 완료 ---");
+
         return ApiResponse.success(HttpStatus.CREATED, "센서 데이터 전송 성공", response);
+    }
+
+    @GetMapping("/me")
+    public ApiResponse<SubmissionPageResponse> getMySubmissions(
+            @AuthenticationPrincipal Long userId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        SubmissionPageResponse response =
+                submissionService.getMySubmissions(userId, page, size);
+
+        return ApiResponse.success(
+                HttpStatus.OK,
+                "내 전송 기록 조회 성공",
+                response
+        );
     }
 }
