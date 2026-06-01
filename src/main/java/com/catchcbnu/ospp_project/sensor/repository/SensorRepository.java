@@ -8,4 +8,6 @@ import java.util.List;
 public interface SensorRepository extends JpaRepository<Sensor, Long> {
 
     List<Sensor> findByActiveTrue();
+
+    List<Sensor> findByActiveTrueOrderByIdAsc();
 }

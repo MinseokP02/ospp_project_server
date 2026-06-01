@@ -155,9 +155,11 @@ public class CharacterService {
     /**
      * 나중에 Scheduler에서 사용할 메서드.
      * 특정 센서에 이미 출몰 중인 캐릭터가 없으면 랜덤 캐릭터를 생성한다.
+     *
+     *
      */
     @Transactional
-    public void createRandomSpawnIfAbsent(
+    public boolean createRandomSpawnIfAbsent(
             Long sensorId,
             String sensorName,
             int durationMinutes
@@ -168,7 +170,7 @@ public class CharacterService {
                 .existsBySensorIdAndActiveTrueAndExpiresAtAfter(sensorId, now);
 
         if (alreadyExists) {
-            return;
+            return false;
         }
 
         CharacterInfo selectedCharacter = selectRandomCharacterBySpawnRate();
@@ -182,6 +184,8 @@ public class CharacterService {
         );
 
         characterSpawnRepository.save(spawn);
+
+        return true;
     }
 
     /**
